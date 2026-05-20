@@ -1,0 +1,55 @@
+🔧 SISL WEBSITE URLS CONFIGURATION
+=====================================
+
+Please visit your SISL Infotech website and provide the actual URLs/paths for each section.
+Then update the URLS dictionary in main.py with these correct paths.
+
+EXAMPLE FORMAT:
+===============
+URLS = {
+    "home": "https://www.sislinfotech.com/",
+    "about": "https://www.sislinfotech.com/about-us/",
+    "services": "https://www.sislinfotech.com/services/",
+    "solutions": "https://www.sislinfotech.com/solutions/",
+    "portfolio": "https://www.sislinfotech.com/portfolio/",
+    "case-studies": "https://www.sislinfotech.com/case-studies/",
+    "team": "https://www.sislinfotech.com/team/",
+    "blog": "https://www.sislinfotech.com/blog/",
+    "careers": "https://www.sislinfotech.com/careers/",
+    "contact": "https://www.sislinfotech.com/contact/",
+    "faq": "https://www.sislinfotech.com/faq/",
+}
+
+PLEASE PROVIDE YOUR ACTUAL URLS:
+=================================
+
+1. Website Home URL: https://www.sislinfotech.com
+   
+2. About/Company Page: _______________________________________________
+
+3. Services Page: ____________________________________________________
+
+4. Solutions Page: ___________________________________________________
+
+5. Portfolio/Projects Page: ___________________________________________
+
+6. Case Studies Page: ________________________________________________
+
+7. Team Page: ________________________________________________________
+
+8. Blog Page: ________________________________________________________
+
+9. Careers/Jobs Page: ________________________________________________
+
+10. Contact Page: ____________________________________________________
+
+11. FAQ Page: ________________________________________________________
+
+12. Any other pages you want indexed:
+    - Name: _________  URL: _______________________________________________
+    - Name: _________  URL: _______________________________________________
+    - Name: _________  URL: _______________________________________________
+
+ONCE YOU PROVIDE THESE URLs:
+=============================
+I'll update the main.py file with the correct paths and the indexing will work properly!

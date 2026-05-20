@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SISL Connect Bot – Intelligent Support Assistant</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ebf0 100%);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .chat-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: white;
+    }
+
+    /* Header */
+    .chat-header {
+      background: linear-gradient(135deg, #0a2463 0%, #001f3f 100%);
+      color: white;
+      padding: 16px 20px;
+      box-shadow: 0 4px 12px rgba(10, 36, 99, 0.15);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-container {
+      flex-shrink: 0;
+    }
+
+    .logo-container img {
+      height: 48px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .header-content {
+      flex: 1;
+    }
+
+    .chat-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .chat-header p {
+      font-size: 12px;
+      opacity: 0.85;
+      margin: 0;
+      letter-spacing: 0.2px;
+    }
+
+    /* Messages Area */
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #fafbfc;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 8px;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message.bot {
+      justify-content: flex-start;
+    }
+
+    .message-content {
+      max-width: 70%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      word-wrap: break-word;
+      line-height: 1.4;
+      font-size: 14px;
+    }
+
+    .message.user .message-content {
+      background: linear-gradient(135deg, #0066cc 0%, #0a2463 100%);
+      color: white;
+      border-radius: 18px 18px 4px 18px;
+      box-shadow: 0 2px 8px rgba(10, 36, 99, 0.2);
+    }
+
+    .message.bot .message-content {
+      background: #f0f4f8;
+      color: #1a1a1a;
+      border-radius: 18px 18px 18px 4px;
+      border-left: 3px solid #0066cc;
+    }
+
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 12px 16px;
+      background: #f0f4f8;
+      border-radius: 18px 18px 18px 4px;
+      border-left: 3px solid #0066cc;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #0a2463;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% {
+        opacity: 0.3;
+        transform: translateY(0);
+      }
+      30% {
+        opacity: 1;
+        transform: translateY(-10px);
+      }
+    }
+
+    /* Input Area */
+    .chat-input-wrapper {
+      padding: 16px 20px;
+      background: white;
+      border-top: 2px solid #e8ebf0;
+      flex-shrink: 0;
+    }
+
+    .chat-input-box {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .chat-input-box input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e8ebf0;
+      border-radius: 24px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      font-family: inherit;
+      background: white;
+    }
+
+    .chat-input-box input:focus {
+      border-color: #0066cc;
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+
+    .chat-input-box input::placeholder {
+      color: #999;
+    }
+
+    .chat-input-box button {
+      padding: 10px 24px;
+      background: linear-gradient(135deg, #0066cc 0%, #004199 100%);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+    }
+
+    .chat-input-box button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+      background: linear-gradient(135deg, #004199 0%, #002a66 100%);
+    }
+
+    .chat-input-box button:active {
+      transform: translateY(0);
+    }
+
+    .chat-input-box button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Accent Red for Important Elements */
+    .accent-red {
+      color: #c41e3a;
+    }
+
+    /* Scrollbar Styling */
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #0a2463;
+      border-radius: 3px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: #001f3f;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .chat-header {
+        padding: 12px 16px;
+        gap: 12px;
+      }
+
+      .logo-container img {
+        height: 40px;
+      }
+
+      .chat-header h1 {
+        font-size: 18px;
+      }
+
+      .chat-header p {
+        font-size: 11px;
+      }
+
+      .chat-messages {
+        padding: 16px;
+      }
+
+      .message-content {
+        max-width: 85%;
+        font-size: 13px;
+      }
+
+      .chat-input-wrapper {
+        padding: 12px 16px;
+      }
+
+      .chat-input-box input {
+        padding: 10px 14px;
+        font-size: 13px;
+      }
+
+      .chat-input-box button {
+        padding: 8px 20px;
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .chat-header {
+        padding: 10px 12px;
+        gap: 10px;
+      }
+
+      .logo-container img {
+        height: 36px;
+      }
+
+      .chat-header h1 {
+        font-size: 16px;
+        margin-bottom: 2px;
+      }
+
+      .chat-header p {
+        font-size: 10px;
+      }
+
+      .message-content {
+        max-width: 90%;
+        font-size: 13px;
+        padding: 10px 12px;
+      }
+
+      .chat-input-box {
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chat-container">
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="logo-container">
+        <img src="logo.bmp" alt="SISL Infotech Logo" />
+      </div>
+      <div class="header-content">
+        <h1>SISL Connect Bot</h1>
+        <p>Intelligent Support Assistant</p>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages" id="chat-messages">
+      <div class="message bot">
+        <div class="message-content">
+          👋 Welcome to SISL Connect Bot! I'm here to help you with information about SISL Infotech services, products, and more. How can I assist you today?
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-wrapper">
+      <div class="chat-input-box">
+        <input
+          type="text"
+          id="user-input"
+          placeholder="Type your message here..."
+          autocomplete="off"
+        />
+        <button id="send-btn" onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const messagesDiv = document.getElementById("chat-messages");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    // Send message
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      addMessage(message, "user");
+      userInput.value = "";
+      sendBtn.disabled = true;
+
+      // Show typing indicator
+      showTypingIndicator();
+
+      try {
+        const response = await fetch(
+          "https://midc-indexer-120807823040.asia-south1.run.app/chat",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: message })
+          }
+        );
+
+        removeTypingIndicator();
+
+        if (!response.ok) throw new Error("Server error");
+
+        const data = await response.json();
+        addMessage(data.answer || "I couldn't find an answer. Please try another question.", "bot");
+      } catch (error) {
+        removeTypingIndicator();
+        addMessage(
+          "Sorry, I'm unable to reach the server. Please check your connection and try again.",
+          "bot"
+        );
+      } finally {
+        sendBtn.disabled = false;
+        userInput.focus();
+      }
+    }
+
+    // Add message to UI
+    function addMessage(text, sender) {
+      const div = document.createElement("div");
+      div.className = `message ${sender}`;
+      
+      const contentDiv = document.createElement("div");
+      contentDiv.className = "message-content";
+      contentDiv.innerText = text;
+      
+      div.appendChild(contentDiv);
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Show typing indicator
+    function showTypingIndicator() {
+      const div = document.createElement("div");
+      div.className = "message bot";
+      div.id = "typing-indicator";
+      
+      const indicator = document.createElement("div");
+      indicator.className = "typing-indicator";
+      indicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+      
+      div.appendChild(indicator);
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Remove typing indicator
+    function removeTypingIndicator() {
+      const indicator = document.getElementById("typing-indicator");
+      if (indicator) indicator.remove();
+    }
+
+    // Enter key support
+    userInput.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Focus input on page load
+    window.addEventListener("load", () => {
+      userInput.focus();
+    });
+  </script>
+</body>
+</html>

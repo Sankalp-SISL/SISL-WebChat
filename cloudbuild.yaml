@@ -47,14 +47,17 @@ steps:
     args:
       - '-c'
       - |
-        gcloud run deploy chatbot-backend \
-          --image us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:$SHORT_SHA \
-          --region us-central1 \
-          --platform managed \
-          --allow-unauthenticated \
-          --set-env-vars BUCKET_NAME=sisl-connect-content \
-          --memory 512Mi \
-          --cpu 1
+        for i in {1..3}; do
+          gcloud run deploy chatbot-backend \
+            --image us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:$SHORT_SHA \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars BUCKET_NAME=sisl-connect-content \
+            --memory 512Mi \
+            --cpu 1 && break
+          [ $i -lt 3 ] && sleep 5
+        done
     id: 'deploy-chatbot'
     waitFor: ['push-chatbot']
 
@@ -64,16 +67,19 @@ steps:
     args:
       - '-c'
       - |
-        gcloud run deploy indexer-service \
-          --image us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/indexer:$SHORT_SHA \
-          --region us-central1 \
-          --platform managed \
-          --allow-unauthenticated \
-          --set-env-vars BUCKET_NAME=sisl-connect-content \
-          --memory 512Mi \
-          --cpu 1 \
-          --timeout 3600 \
-          --max-instances 5
+        for i in {1..3}; do
+          gcloud run deploy indexer-service \
+            --image us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/indexer:$SHORT_SHA \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars BUCKET_NAME=sisl-connect-content \
+            --memory 512Mi \
+            --cpu 1 \
+            --timeout 3600 \
+            --max-instances 5 && break
+          [ $i -lt 3 ] && sleep 5
+        done
     id: 'deploy-indexer'
     waitFor: ['push-indexer']
 
@@ -104,13 +110,16 @@ steps:
     args:
       - '-c'
       - |
-        gcloud run deploy chatbot-frontend \
-          --image us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA \
-          --region us-central1 \
-          --platform managed \
-          --allow-unauthenticated \
-          --memory 256Mi \
-          --cpu 1
+        for i in {1..3}; do
+          gcloud run deploy chatbot-frontend \
+            --image us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 256Mi \
+            --cpu 1 && break
+          [ $i -lt 3 ] && sleep 5
+        done
     id: 'deploy-frontend'
     waitFor: ['push-frontend']
 

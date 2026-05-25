@@ -10,8 +10,13 @@ import google.generativeai as genai
 BUCKET_NAME = "sisl-connect-content"
 MODEL_NAME = "gemini-1.5-flash"
 
-# Gemini via service account (no API key needed)
-genai.configure()  # uses default credentials in Cloud Run
+# Gemini API configuration
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+else:
+    # Fallback to Application Default Credentials
+    genai.configure()
 
 app = Flask(__name__)
 

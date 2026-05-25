@@ -115,12 +115,6 @@ steps:
           --cpu 1
     id: 'deploy-frontend'
     waitFor: ['push-frontend']
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA'
-    id: 'push-frontend'
-    waitFor: ['build-frontend']
 
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:$SHORT_SHA'

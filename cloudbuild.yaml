@@ -52,7 +52,6 @@ steps:
           --region us-central1 \
           --platform managed \
           --allow-unauthenticated \
-          --service-account runtime-sa@${PROJECT_ID}.iam.gserviceaccount.com \
           --set-env-vars BUCKET_NAME=sisl-connect-content \
           --memory 512Mi \
           --cpu 1
@@ -70,7 +69,6 @@ steps:
           --region us-central1 \
           --platform managed \
           --allow-unauthenticated \
-          --service-account runtime-sa@${PROJECT_ID}.iam.gserviceaccount.com \
           --set-env-vars BUCKET_NAME=sisl-connect-content \
           --memory 512Mi \
           --cpu 1 \

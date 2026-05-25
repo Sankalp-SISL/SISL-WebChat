@@ -171,16 +171,12 @@ def run_indexer(request=None):
     print(f"🎯 Indexing Summary:")
     print(f"   ✅ Successful: {successful}/{len(URLS)}")
     print(f"   ❌ Failed: {failed}/{len(URLS)}")
-    print(f"   ⏰ Completed at: {datetime.datetime.now(datetime.UTC).isoformat()}")
+    print(f"   ⏰ Completed at: {datetime.datetime.now(timezone.utc).isoformat()}")
     
     if request:
         return (f"SISL Connect Bot indexing completed. {successful} sections indexed.", 200)
     else:
         return f"SISL Connect Bot indexing completed. {successful} sections indexed."
-
-if __name__ == "__main__":
-    # Allow direct execution for testing
-    run_indexer()
 
 # Flask app for Cloud Run
 if FLASK_AVAILABLE:

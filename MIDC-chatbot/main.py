@@ -16,8 +16,14 @@ genai.configure()  # uses default credentials in Cloud Run
 app = Flask(__name__)
 
 # --------------------
-# HELPERS
+# CORS SUPPORT
 # --------------------
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
 def load_section(section: str):
     client = storage.Client()
     bucket = client.bucket(BUCKET_NAME)
@@ -86,8 +92,10 @@ def build_context(sections):
 # --------------------
 # ROUTES
 # --------------------
-@app.route("/chat", methods=["POST"])
+@app.route("/chat", methods=["POST", "OPTIONS"])
 def chat():
+    if request.method == "OPTIONS":
+        return "", 204
     body = request.get_json(silent=True) or {}
     question = body.get("question", "").strip()
 

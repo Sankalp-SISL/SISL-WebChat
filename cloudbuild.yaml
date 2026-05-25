@@ -3,12 +3,13 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
+      - '-f'
+      - 'MIDC-chatbot/Dockerfile'
       - '-t'
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:$SHORT_SHA'
       - '-t'
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:latest'
-      - '.'
-    dir: 'MIDC-chatbot'
+      - 'MIDC-chatbot'
     id: 'build-chatbot'
 
   # Push Chatbot image to Artifact Registry
@@ -23,12 +24,13 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
+      - '-f'
+      - 'MIDC-indexer/Dockerfile'
       - '-t'
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/indexer:$SHORT_SHA'
       - '-t'
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/indexer:latest'
-      - '.'
-    dir: 'MIDC-indexer'
+      - 'MIDC-indexer'
     id: 'build-indexer'
 
   # Push Indexer image to Artifact Registry
@@ -77,6 +79,27 @@ steps:
     id: 'deploy-indexer'
     waitFor: ['push-indexer']
 
+  # Build and Push Frontend image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'frontend/Dockerfile'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:latest'
+      - 'frontend'
+    id: 'build-frontend'
+
+  # Push Frontend image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA'
+    id: 'push-frontend'
+    waitFor: ['build-frontend']
+
   # Deploy Frontend to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
@@ -92,20 +115,6 @@ steps:
           --cpu 1
     id: 'deploy-frontend'
     waitFor: ['push-frontend']
-
-  # Build and Push Frontend image
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '-t'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA'
-      - '-t'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:latest'
-      - '.'
-    dir: 'frontend'
-    id: 'build-frontend'
-
-  # Push Frontend image
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'

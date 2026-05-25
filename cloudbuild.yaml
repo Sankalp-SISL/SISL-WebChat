@@ -1,0 +1,125 @@
+steps:
+  # Build MIDC Chatbot service
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:$SHORT_SHA'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:latest'
+      - '.'
+    dir: 'MIDC-chatbot'
+    id: 'build-chatbot'
+
+  # Push Chatbot image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:$SHORT_SHA'
+    id: 'push-chatbot'
+    waitFor: ['build-chatbot']
+
+  # Build MIDC Indexer service
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/indexer:$SHORT_SHA'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/indexer:latest'
+      - '.'
+    dir: 'MIDC-indexer'
+    id: 'build-indexer'
+
+  # Push Indexer image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/indexer:$SHORT_SHA'
+    id: 'push-indexer'
+    waitFor: ['build-indexer']
+
+  # Deploy Chatbot to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run deploy chatbot-backend \
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:$SHORT_SHA \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --service-account runtime-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+          --set-env-vars BUCKET_NAME=sisl-connect-content \
+          --memory 512Mi \
+          --cpu 1
+    id: 'deploy-chatbot'
+    waitFor: ['push-chatbot']
+
+  # Deploy Indexer to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run deploy indexer-service \
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/indexer:$SHORT_SHA \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --service-account runtime-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+          --set-env-vars BUCKET_NAME=sisl-connect-content \
+          --memory 512Mi \
+          --cpu 1 \
+          --timeout 3600 \
+          --max-instances 5
+    id: 'deploy-indexer'
+    waitFor: ['push-indexer']
+
+  # Deploy Frontend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run deploy chatbot-frontend \
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA \
+          --region us-central1 \
+          --platform managed \
+          --allow-unauthenticated \
+          --memory 256Mi \
+          --cpu 1
+    id: 'deploy-frontend'
+    waitFor: ['push-frontend']
+
+  # Build and Push Frontend image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:latest'
+      - '.'
+    dir: 'frontend'
+    id: 'build-frontend'
+
+  # Push Frontend image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA'
+    id: 'push-frontend'
+    waitFor: ['build-frontend']
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/chatbot:$SHORT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/indexer:$SHORT_SHA'
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/my-docker-repo/frontend:$SHORT_SHA'
+
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 3600s

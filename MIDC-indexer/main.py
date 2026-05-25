@@ -1,11 +1,19 @@
 import requests
 import json
 import datetime
+import os
+from datetime import timezone
 from bs4 import BeautifulSoup
 from google.cloud import storage
 from urllib.parse import urljoin
 
-BUCKET_NAME = "sisl-connect-content"
+try:
+    from flask import Flask, jsonify
+    FLASK_AVAILABLE = True
+except ImportError:
+    FLASK_AVAILABLE = False
+
+BUCKET_NAME = os.environ.get("BUCKET_NAME", "sisl-connect-content")
 
 # SISL Infotech website sections to index
 BASE_URL = "https://www.sislinfotech.com"
@@ -82,7 +90,7 @@ def scrape_section(section, url):
         payload = {
             "section": section,
             "source_url": url,
-            "last_updated": datetime.datetime.now(datetime.UTC).isoformat(),
+            "last_updated": datetime.datetime.now(timezone.utc).isoformat(),
             "total_words": sum(len(chunk.split()) for chunk in chunks),
             "chunk_count": len(chunks),
             "chunks": chunks
@@ -173,3 +181,25 @@ def run_indexer(request=None):
 if __name__ == "__main__":
     # Allow direct execution for testing
     run_indexer()
+
+# Flask app for Cloud Run
+if FLASK_AVAILABLE:
+    app = Flask(__name__)
+
+    @app.route("/", methods=["GET", "POST"])
+    def index():
+        """HTTP endpoint for Cloud Run and Cloud Scheduler"""
+        result, status = run_indexer(request=True)
+        return jsonify({
+            "status": "success" if status == 200 else "error",
+            "message": result
+        }), status
+
+    @app.route("/health", methods=["GET"])
+    def health():
+        """Health check endpoint"""
+        return jsonify({"status": "healthy"}), 200
+
+    if __name__ == "__main__":
+        port = int(os.environ.get("PORT", 8080))
+        app.run(host="0.0.0.0", port=port, debug=False)

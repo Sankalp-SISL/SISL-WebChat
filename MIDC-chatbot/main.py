@@ -2,16 +2,15 @@ import os
 import json
 from flask import Flask, request, jsonify
 from google.cloud import storage
-from google import genai
+from groq import Groq
 
 # --------------------
 # CONFIG
 # --------------------
 BUCKET_NAME = "sisl-connect-content"
-MODEL_NAME = "gemini-2.5-flash-preview-05-20"
+MODEL_NAME = "llama-3.3-70b-versatile"
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else genai.Client()
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 app = Flask(__name__)
 
@@ -124,10 +123,13 @@ INSTRUCTIONS:
 - If you mention specific services or products, cite them accurately
 """
 
-    response = client.models.generate_content(model=MODEL_NAME, contents=prompt)
+    response = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[{"role": "user", "content": prompt}]
+    )
 
     return jsonify({
-        "answer": response.text,
+        "answer": response.choices[0].message.content,
         "sources": sources
     })
 

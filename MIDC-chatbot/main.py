@@ -8,7 +8,7 @@ import google.generativeai as genai
 # CONFIG
 # --------------------
 BUCKET_NAME = "sisl-connect-content"
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "gemini-2.0-flash-lite"
 
 # Gemini API configuration
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")

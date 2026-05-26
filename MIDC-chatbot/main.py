@@ -2,7 +2,7 @@ import os
 import json
 from flask import Flask, request, jsonify
 from google.cloud import storage
-import google.generativeai as genai
+from google import genai
 
 # --------------------
 # CONFIG
@@ -10,13 +10,8 @@ import google.generativeai as genai
 BUCKET_NAME = "sisl-connect-content"
 MODEL_NAME = "gemini-2.5-flash-preview-05-20"
 
-# Gemini API configuration
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-else:
-    # Fallback to Application Default Credentials
-    genai.configure()
+client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else genai.Client()
 
 app = Flask(__name__)
 
@@ -129,8 +124,7 @@ INSTRUCTIONS:
 - If you mention specific services or products, cite them accurately
 """
 
-    model = genai.GenerativeModel(MODEL_NAME)
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(model=MODEL_NAME, contents=prompt)
 
     return jsonify({
         "answer": response.text,
